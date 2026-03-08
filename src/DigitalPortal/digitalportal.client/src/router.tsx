@@ -6,6 +6,7 @@ import AuthCallbackPage from './pages/AuthCallbackPage';
 import SluttbrukerApiPage from './pages/SluttbrukerApiPage';
 import TjenesteeigerApiPage from './pages/TjenesteeigerApiPage';
 import PdpPage from './pages/PdpPage';
+import MyClientsPage from './pages/MyClientsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 const router = createBrowserRouter([
@@ -19,6 +20,7 @@ const router = createBrowserRouter([
       { path: 'sluttbruker-api', element: <SluttbrukerApiPage /> },
       { path: 'tjenesteeier-api', element: <TjenesteeigerApiPage /> },
       { path: 'pdp', element: <PdpPage /> },
+      { path: 'mine-klienter', element: <MyClientsPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
