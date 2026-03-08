@@ -327,6 +327,18 @@ export default function AuthCallbackPage() {
               </svg>
             }
           />
+          <ApiFeatureCard
+            title="Enduser tilkoblinger"
+            description="Se systembrukere og agenter som har tilgang for en gitt part, med roller, tilgangspakker og ressurser per tilkobling."
+            scope="altinn:accessmanagement/enduser:connections:fromothers.read"
+            to="/enduser-connections"
+            grantedScopes={tokenInfo.scopes}
+            icon={
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+              </svg>
+            }
+          />
         </div>
       </div>
 
