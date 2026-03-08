@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh pr:*)",
+      "Bash(npm install @digdir/designsystemet-react @digdir/designsystemet-css @digdir/designsystemet-theme react-router-dom tailwindcss @tailwindcss/vite)",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npm install react-i18next i18next)",
+      "Read(//d/repos/**)"
+    ]
+  }
+}
