@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "home": "Hjem",
+    "sluttbrukerApi": "Sluttbruker-API",
+    "tjenesteeigerApi": "Tjenesteeier-API",
+    "pdp": "PDP",
+    "altinnDocs": "Altinn-dokumentasjon"
+  },
+  "footer": {
+    "tagline": "Referanseimplementasjon for Altinn tilgangsstyring",
+    "org": "Digitaliseringsdirektoratet"
+  },
+  "lang": {
+    "switchTo": "Switch to English",
+    "current": "Norsk bokmål"
+  },
+  "landing": {
+    "badge": "Referanseimplementasjon – Altinn autorisasjon",
+    "hero": {
+      "title": "Tilgangsstyring med Altinn i din egen portal",
+      "description": "En praktisk referanseimplementasjon for offentlige tjenesteeiere som vil bruke Altinns autorisasjonsplattform til å styre tilgang i egne portal- og plattformløsninger. Utforsk sluttbruker-API, tjenesteeier-API og PDP med live eksempler.",
+      "exploreBtn": "Utforsk demoene",
+      "docsBtn": "Les dokumentasjonen"
+    },
+    "features": {
+      "heading": "Hva demonstrerer DigitalPortal?",
+      "subheading": "Tre hoveddeler dekker de viktigste integrasjonspunktene mot Altinn autorisasjon.",
+      "explore": "Utforsk",
+      "sluttbruker": {
+        "tag": "Brukerrettet",
+        "title": "Sluttbruker-API",
+        "description": "Demonstrerer tilgangskontroll sett fra sluttbrukerens perspektiv. Se hvordan en bruker kan logge inn, hente sine rettigheter og få tilgang til tjenester på vegne av seg selv eller en virksomhet."
+      },
+      "tjenesteeiger": {
+        "tag": "Tjenesteeierstyrt",
+        "title": "Tjenesteeier-API",
+        "description": "Viser hvordan du som tjenesteeier kan administrere tilgang til dine tjenester. Opprett og administrer ressurser, deleger rettigheter og styr hvem som har tilgang til hva."
+      },
+      "pdp": {
+        "tag": "Autorisasjon",
+        "title": "Policy Decision Point (PDP)",
+        "description": "Integrer Altinns PDP direkte i din applikasjon for å ta autorisasjonsbeslutninger i sanntid. Se eksempler på XACML-baserte forespørsler og responser for tilgangskontroll."
+      }
+    },
+    "highlights": {
+      "heading": "Hvorfor bruke Altinn til tilgangsstyring?",
+      "subheading": "Altinn har bygget infrastruktur for tilgangsstyring som du kan gjenbruke i din løsning.",
+      "realtime": {
+        "title": "Sanntids tilgangskontroll",
+        "text": "Ta autorisasjonsbeslutninger direkte i din portal via Altinn PDP uten ekstra rundturer."
+      },
+      "standards": {
+        "title": "Standardbasert sikkerhet",
+        "text": "XACML, Maskinporten og ID-porten – bygg på etablerte, sikre standarder."
+      },
+      "public": {
+        "title": "For offentlige tjenesteeiere",
+        "text": "Designet for virksomheter som ønsker å bruke Altinn som autoritativ kilde for tilgang."
+      },
+      "ready": {
+        "title": "Klar til bruk",
+        "text": "Referansekode du kan bruke direkte som utgangspunkt for din egen implementasjon."
+      }
+    },
+    "cta": {
+      "heading": "Kom i gang",
+      "subheading": "Velg en av demoseksjonene og se kode og API-kall i praksis."
+    }
+  },
+  "sluttbrukerApi": {
+    "badge": "Sluttbruker-API",
+    "heading": "Tilgangskontroll via sluttbruker-API",
+    "description": "Denne seksjonen demonstrerer hvordan en sluttbruker kan autentisere seg via ID-porten og hente sine rettigheter og tilganger gjennom Altinns sluttbruker-API.",
+    "wip": "Under utvikling – Demo-innhold kommer her."
+  },
+  "tjenesteeigerApi": {
+    "badge": "Tjenesteeier-API",
+    "heading": "Tilgangsstyring via tjenesteeier-API",
+    "description": "Her vises hvordan du som tjenesteeier bruker Maskinporten og Altinns tjenesteeier-API til å opprette ressurser, administrere rettigheter og kontrollere tilgang i dine tjenester.",
+    "wip": "Under utvikling – Demo-innhold kommer her."
+  },
+  "pdp": {
+    "badge": "Autorisasjon",
+    "heading": "Policy Decision Point (PDP)",
+    "description": "Demonstrerer integrasjon mot Altinns PDP for å ta autorisasjonsbeslutninger i sanntid. Se XACML-forespørsler og -responser, og forstå hvordan du kan bruke PDP direkte i din applikasjonslogikk.",
+    "wip": "Under utvikling – Demo-innhold kommer her."
+  },
+  "notFound": {
+    "code": "404",
+    "heading": "Siden finnes ikke",
+    "description": "Siden du leter etter eksisterer ikke eller har blitt flyttet.",
+    "backBtn": "Gå til forsiden"
+  }
+}
