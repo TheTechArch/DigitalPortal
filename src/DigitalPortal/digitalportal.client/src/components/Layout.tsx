@@ -3,6 +3,7 @@ import { useAuth } from '../hooks/useAuth';
 
 const navLinks = [
   { to: '/', label: 'Hjem', end: true },
+  { to: '/mine-klienter', label: 'Mine klienter' },
   { to: '/sluttbruker-api', label: 'Sluttbruker-API' },
   { to: '/tjenesteeier-api', label: 'Tjenesteeier-API' },
   { to: '/pdp', label: 'PDP' },
