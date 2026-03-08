@@ -1,18 +1,31 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heading, Paragraph, Spinner } from '@digdir/designsystemet-react';
 import { useAuth } from '../hooks/useAuth';
-import type {
-  ConnectionDto,
-  ConnectionsFilter,
-  PaginatedResult,
-} from '../types/connections';
-import {
-  defaultConnectionsFilter,
-  buildConnectionsQueryString,
-} from '../types/connections';
+import type { ConnectionDto, ConnectionsFilter, PaginatedResult } from '../types/connections';
+import { defaultConnectionsFilter, buildConnectionsQueryString } from '../types/connections';
+import type { AuthorizedPartyDto } from '../types/authorizedParties';
 
 const READ_SCOPE = 'altinn:accessmanagement/enduser:connections:fromothers.read';
+
+// ── Flatten party + subunits into a flat list for the picker ──────────────────
+
+interface PartyOption {
+  uuid: string;
+  label: string;        // "Navn (Org: 123456789)"
+  isSubunit: boolean;
+}
+
+function flattenParties(parties: AuthorizedPartyDto[], depth = 0): PartyOption[] {
+  const result: PartyOption[] = [];
+  for (const p of parties) {
+    const indent = depth > 0 ? `${'  '.repeat(depth)}↳ ` : '';
+    const orgPart = p.organizationNumber ? ` (${p.organizationNumber})` : '';
+    result.push({ uuid: p.partyUuid, label: `${indent}${p.name}${orgPart}`, isSubunit: depth > 0 });
+    if (p.subunits?.length) result.push(...flattenParties(p.subunits, depth + 1));
+  }
+  return result;
+}
 
 // ── Toggle ────────────────────────────────────────────────────────────────────
 
@@ -39,11 +52,19 @@ function FilterPanel({
   onChange,
   onFetch,
   isLoading,
+  parties,
+  partiesLoading,
+  partiesError,
+  onRetryParties,
 }: {
   filter: ConnectionsFilter;
   onChange: (f: ConnectionsFilter) => void;
   onFetch: () => void;
   isLoading: boolean;
+  parties: PartyOption[];
+  partiesLoading: boolean;
+  partiesError: string | null;
+  onRetryParties: () => void;
 }) {
   const set = <K extends keyof ConnectionsFilter>(key: K, val: ConnectionsFilter[K]) =>
     onChange({ ...filter, [key]: val });
@@ -52,22 +73,71 @@ function FilterPanel({
 
   return (
     <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-5">
-      {/* Required: party UUID */}
+
+      {/* Party selector */}
       <div>
-        <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
-          party <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          value={filter.party}
-          onChange={e => set('party', e.target.value)}
-          placeholder="UUID til parten du representerer"
-          className={`w-full text-xs font-mono border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
-            partyMissing ? 'border-red-300 bg-red-50' : 'border-gray-200'
-          }`}
-        />
-        {partyMissing && (
-          <p className="text-xs text-red-500 mt-1">Påkrevd – UUID fra Autoriserte parter</p>
+        <div className="flex items-center justify-between mb-1">
+          <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Part <span className="text-red-500">*</span>
+          </label>
+          {partiesError && (
+            <button onClick={onRetryParties} className="text-xs text-blue-600 hover:underline cursor-pointer">
+              Prøv igjen
+            </button>
+          )}
+        </div>
+
+        {partiesLoading ? (
+          <div className="flex items-center gap-2 text-xs text-gray-400 py-2">
+            <Spinner aria-label="" data-size="sm" />
+            Henter parter via altinn_access_management...
+          </div>
+        ) : partiesError ? (
+          <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg p-2 mb-2">
+            {partiesError}
+          </div>
+        ) : null}
+
+        {/* Dropdown if parties loaded, otherwise text input fallback */}
+        {!partiesLoading && parties.length > 0 ? (
+          <select
+            value={filter.party}
+            onChange={e => set('party', e.target.value)}
+            className={`w-full text-sm border rounded-lg px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-300 cursor-pointer ${
+              partyMissing ? 'border-red-300' : 'border-gray-200'
+            }`}
+          >
+            <option value="">— Velg part —</option>
+            {parties.map(p => (
+              <option key={p.uuid} value={p.uuid}>{p.label}</option>
+            ))}
+          </select>
+        ) : !partiesLoading ? (
+          <>
+            <input
+              type="text"
+              value={filter.party}
+              onChange={e => set('party', e.target.value)}
+              placeholder="UUID til parten du representerer"
+              className={`w-full text-xs font-mono border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300 ${
+                partyMissing ? 'border-red-300 bg-red-50' : 'border-gray-200'
+              }`}
+            />
+            {!partiesError && (
+              <p className="text-xs text-gray-400 mt-1">
+                Ingen parter funnet med tilgang til altinn_access_management
+              </p>
+            )}
+          </>
+        ) : null}
+
+        {partyMissing && !partiesLoading && (
+          <p className="text-xs text-red-500 mt-1">Påkrevd</p>
+        )}
+
+        {/* Show UUID of selected party */}
+        {filter.party && (
+          <code className="text-xs text-gray-400 font-mono block mt-1 truncate">{filter.party}</code>
         )}
       </div>
 
@@ -100,16 +170,8 @@ function FilterPanel({
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">Inkluder i svar</p>
         <div className="space-y-3">
-          <Toggle
-            label="Klientdelegeringer"
-            checked={filter.includeClientDelegations}
-            onChange={v => set('includeClientDelegations', v)}
-          />
-          <Toggle
-            label="Agenttilkoblinger"
-            checked={filter.includeAgentConnections}
-            onChange={v => set('includeAgentConnections', v)}
-          />
+          <Toggle label="Klientdelegeringer" checked={filter.includeClientDelegations} onChange={v => set('includeClientDelegations', v)} />
+          <Toggle label="Agenttilkoblinger" checked={filter.includeAgentConnections} onChange={v => set('includeAgentConnections', v)} />
         </div>
       </div>
 
@@ -155,17 +217,14 @@ function ConnectionCard({ conn, depth = 0 }: { conn: ConnectionDto; depth?: numb
     <div className={depth > 0 ? 'ml-6 border-l-2 border-gray-100 pl-4' : ''}>
       <div className="bg-white border border-gray-200 rounded-xl p-4 mb-3 hover:shadow-sm transition-shadow">
         <div className="flex items-start gap-3">
-          {/* Icon */}
           <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5" style={{ backgroundColor: '#EEF4FF' }}>
             {conn.party?.type === 'Person' ? (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E4D8C" strokeWidth="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
               </svg>
             ) : (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E4D8C" strokeWidth="2">
-                <rect x="2" y="7" width="20" height="14" rx="2" />
-                <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
+                <rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
               </svg>
             )}
           </div>
@@ -179,31 +238,23 @@ function ConnectionCard({ conn, depth = 0 }: { conn: ConnectionDto; depth?: numb
                 </span>
               )}
             </div>
-
             {conn.party?.organizationIdentifier && (
-              <code className="text-xs text-gray-400 font-mono block mb-1">
-                Org: {conn.party.organizationIdentifier}
-              </code>
+              <code className="text-xs text-gray-400 font-mono block mb-1">Org: {conn.party.organizationIdentifier}</code>
             )}
             <code className="text-xs text-gray-300 font-mono block">{conn.party?.id}</code>
 
-            {/* Roles */}
             {conn.roles?.length > 0 && (
               <div className="mt-2">
                 <p className="text-xs text-gray-400 font-medium">Roller</p>
                 <TagList items={conn.roles.map(r => r.code || r.urn)} color="bg-indigo-50 text-indigo-700" />
               </div>
             )}
-
-            {/* Packages */}
             {conn.packages?.length > 0 && (
               <div className="mt-2">
                 <p className="text-xs text-gray-400 font-medium">Tilgangspakker</p>
                 <TagList items={conn.packages.map(p => p.urn?.split(':').pop() ?? p.urn)} color="bg-green-50 text-green-700" />
               </div>
             )}
-
-            {/* Resources */}
             {conn.resources?.length > 0 && (
               <div className="mt-2">
                 <p className="text-xs text-gray-400 font-medium">Ressurser</p>
@@ -212,60 +263,25 @@ function ConnectionCard({ conn, depth = 0 }: { conn: ConnectionDto; depth?: numb
             )}
           </div>
 
-          {/* Sub-connection toggle */}
           {hasSubs && (
             <button
               onClick={() => setExpanded(e => !e)}
               className="flex-shrink-0 flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
             >
               <span>{conn.connections.length} sub</span>
-              <svg
-                width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                className={`transition-transform ${expanded ? 'rotate-180' : ''}`}
-              >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                className={`transition-transform ${expanded ? 'rotate-180' : ''}`}>
                 <polyline points="6 9 12 15 18 9" />
               </svg>
             </button>
           )}
         </div>
       </div>
-
-      {/* Sub-connections */}
       {hasSubs && expanded && (
         <div className="mb-3">
-          {conn.connections.map(sub => (
-            <ConnectionCard key={sub.party?.id} conn={sub} depth={depth + 1} />
-          ))}
+          {conn.connections.map(sub => <ConnectionCard key={sub.party?.id} conn={sub} depth={depth + 1} />)}
         </div>
       )}
-    </div>
-  );
-}
-
-// ── Missing scope warning ─────────────────────────────────────────────────────
-
-function ScopeWarning({ scope, onLogin }: { scope: string; onLogin: () => void }) {
-  return (
-    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center max-w-xl mx-auto mt-8">
-      <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#92400e" strokeWidth="2">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-          <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-        </svg>
-      </div>
-      <Heading level={2} data-size="md" className="mb-2">Manglende scope</Heading>
-      <Paragraph className="text-gray-600 mb-6">
-        Tokenet mangler{' '}
-        <code className="bg-white border border-amber-200 px-1.5 py-0.5 rounded text-amber-800 font-mono text-sm">{scope}</code>.
-        Logg inn på nytt og velg dette scopet.
-      </Paragraph>
-      <button
-        onClick={onLogin}
-        className="px-5 py-2.5 rounded-xl text-white text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity"
-        style={{ backgroundColor: '#1E4D8C' }}
-      >
-        Logg inn på nytt
-      </button>
     </div>
   );
 }
@@ -281,7 +297,34 @@ export default function ConnectionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [hasFetched, setHasFetched] = useState(false);
 
+  // Authorized parties for the party picker
+  const [parties, setParties] = useState<PartyOption[]>([]);
+  const [partiesLoading, setPartiesLoading] = useState(false);
+  const [partiesError, setPartiesError] = useState<string | null>(null);
+
   const hasScope = tokenInfo?.scopes?.includes(READ_SCOPE) ?? false;
+
+  const loadParties = useCallback(() => {
+    setPartiesLoading(true);
+    setPartiesError(null);
+    fetch('/api/accessmanagement/authorizedparties?anyOfResourceIds=altinn_access_management')
+      .then(async res => {
+        if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+        return res.json() as Promise<PaginatedResult<AuthorizedPartyDto[]>>;
+      })
+      .then(data => {
+        const flat = flattenParties(data.data?.flat() ?? []);
+        setParties(flat);
+        // Auto-select if only one party
+        if (flat.length === 1) setFilter(f => ({ ...f, party: flat[0].uuid }));
+      })
+      .catch(e => setPartiesError(e.message))
+      .finally(() => setPartiesLoading(false));
+  }, []);
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && hasScope) loadParties();
+  }, [authLoading, isAuthenticated, hasScope, loadParties]);
 
   const fetchConnections = useCallback(() => {
     if (!filter.party.trim()) return;
@@ -301,16 +344,26 @@ export default function ConnectionsPage() {
     return <div className="flex justify-center items-center min-h-96"><Spinner aria-label="Laster..." /></div>;
   }
 
-  if (!isAuthenticated) {
-    navigate('/login');
-    return null;
-  }
+  if (!isAuthenticated) { navigate('/login'); return null; }
 
   if (!hasScope) {
     return (
       <div className="max-w-5xl mx-auto px-4 py-10">
         <PageHeader />
-        <ScopeWarning scope={READ_SCOPE} onLogin={() => navigate('/login')} />
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center max-w-xl mx-auto mt-8">
+          <Heading level={2} data-size="md" className="mb-2">Manglende scope</Heading>
+          <Paragraph className="text-gray-600 mb-6">
+            Tokenet mangler{' '}
+            <code className="bg-white border border-amber-200 px-1.5 py-0.5 rounded text-amber-800 font-mono text-sm">{READ_SCOPE}</code>.
+          </Paragraph>
+          <button
+            onClick={() => navigate('/login')}
+            className="px-5 py-2.5 rounded-xl text-white text-sm font-medium cursor-pointer hover:opacity-90 transition-opacity"
+            style={{ backgroundColor: '#1E4D8C' }}
+          >
+            Logg inn på nytt
+          </button>
+        </div>
       </div>
     );
   }
@@ -322,12 +375,19 @@ export default function ConnectionsPage() {
       <PageHeader />
 
       <div className="flex flex-col lg:flex-row gap-6 mt-8">
-        {/* Filter sidebar */}
         <div className="w-full lg:w-80 flex-shrink-0">
-          <FilterPanel filter={filter} onChange={setFilter} onFetch={fetchConnections} isLoading={isLoading} />
+          <FilterPanel
+            filter={filter}
+            onChange={setFilter}
+            onFetch={fetchConnections}
+            isLoading={isLoading}
+            parties={parties}
+            partiesLoading={partiesLoading}
+            partiesError={partiesError}
+            onRetryParties={loadParties}
+          />
         </div>
 
-        {/* Results */}
         <div className="flex-1 min-w-0">
           {!hasFetched && !isLoading && (
             <div className="text-center py-20 bg-gray-50 border border-gray-200 rounded-2xl">
@@ -336,20 +396,13 @@ export default function ConnectionsPage() {
                   <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
                 </svg>
               </div>
-              <Paragraph className="text-gray-400">Fyll inn party-UUID og klikk «Hent tilkoblinger»</Paragraph>
-              <Paragraph data-size="sm" className="text-gray-400 mt-1">
-                Finn UUID-er på siden{' '}
-                <button onClick={() => navigate('/autoriserte-parter')} className="underline cursor-pointer text-blue-500">
-                  Autoriserte parter
-                </button>
-              </Paragraph>
+              <Paragraph className="text-gray-400">Velg en part og klikk «Hent tilkoblinger»</Paragraph>
             </div>
           )}
 
           {isLoading && (
             <div className="flex justify-center items-center gap-3 py-20 text-gray-500">
-              <Spinner aria-label="Henter..." />
-              <span className="text-sm">Henter fra Altinn...</span>
+              <Spinner aria-label="Henter..." /><span className="text-sm">Henter fra Altinn...</span>
             </div>
           )}
 
@@ -366,10 +419,7 @@ export default function ConnectionsPage() {
                 <p className="text-sm text-gray-500">
                   {connections.length} tilkobling{connections.length !== 1 ? 'er' : ''}
                 </p>
-                <button
-                  onClick={fetchConnections}
-                  className="text-xs text-gray-500 hover:text-gray-800 flex items-center gap-1 cursor-pointer"
-                >
+                <button onClick={fetchConnections} className="text-xs text-gray-500 hover:text-gray-800 flex items-center gap-1 cursor-pointer">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 .49-4.96" />
                   </svg>
@@ -382,11 +432,7 @@ export default function ConnectionsPage() {
                   <Paragraph className="text-gray-400">Ingen tilkoblinger funnet for denne parten.</Paragraph>
                 </div>
               ) : (
-                <div>
-                  {connections.map(conn => (
-                    <ConnectionCard key={conn.party?.id} conn={conn} />
-                  ))}
-                </div>
+                <div>{connections.map(conn => <ConnectionCard key={conn.party?.id} conn={conn} />)}</div>
               )}
             </>
           )}
@@ -411,10 +457,11 @@ function PageHeader() {
         Hent tilkoblinger for en gitt part – viser hvilke systembrukere og agenter som har tilgang, med tilhørende roller, tilgangspakker og ressurser.
       </Paragraph>
       <div className="mt-2 flex items-center gap-2 flex-wrap">
-        <code className="text-xs bg-blue-50 border border-blue-100 text-blue-700 px-2 py-0.5 rounded font-mono">
-          {READ_SCOPE}
+        <code className="text-xs bg-blue-50 border border-blue-100 text-blue-700 px-2 py-0.5 rounded font-mono">{READ_SCOPE}</code>
+        <span className="text-xs text-gray-400">·</span>
+        <code className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded font-mono">
+          authorizedparties?anyOfResourceIds=altinn_access_management
         </code>
-        <span className="text-xs text-gray-400">· <span className="font-mono">GET /accessmanagement/api/v1/enduser/connections</span></span>
       </div>
     </div>
   );
