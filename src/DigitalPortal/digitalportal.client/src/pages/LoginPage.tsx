@@ -5,11 +5,12 @@ import type { ScopeDefinition } from '../types/auth';
 
 type Language = 'nb' | 'en';
 
-const categoryOrder = ['Grunnleggende', 'Altinn'];
+const categoryOrder = ['Grunnleggende', 'Altinn tilgangsstyring', 'Altinn klientdelegering'];
 
 const categoryLabels: Record<string, Record<Language, string>> = {
   Grunnleggende: { nb: 'Grunnleggende', en: 'Basic' },
-  Altinn: { nb: 'Altinn', en: 'Altinn' },
+  'Altinn tilgangsstyring': { nb: 'Altinn tilgangsstyring', en: 'Altinn access management' },
+  'Altinn klientdelegering': { nb: 'Altinn klientdelegering', en: 'Altinn client delegation' },
 };
 
 export default function LoginPage() {

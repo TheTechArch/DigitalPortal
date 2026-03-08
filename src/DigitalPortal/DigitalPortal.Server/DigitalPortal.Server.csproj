@@ -7,6 +7,7 @@
     <SpaRoot>..\digitalportal.client</SpaRoot>
     <SpaProxyLaunchCommand>npm run dev</SpaProxyLaunchCommand>
     <SpaProxyServerUrl>https://localhost:59063</SpaProxyServerUrl>
+    <UserSecretsId>90616d84-d53e-493f-8a6b-df896cee7fc5</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
