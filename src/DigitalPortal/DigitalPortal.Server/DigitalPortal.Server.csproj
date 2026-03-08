@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Altinn.Authorization.Api.Contracts\Altinn.Authorization.Api.Contracts.csproj" />
     <ProjectReference Include="..\digitalportal.client\digitalportal.client.esproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>

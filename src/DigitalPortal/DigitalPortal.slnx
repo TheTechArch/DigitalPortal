@@ -1,4 +1,5 @@
 <Solution>
+  <Project Path="Altinn.Authorization.Api.Contracts/Altinn.Authorization.Api.Contracts.csproj" />
   <Project Path="digitalportal.client/digitalportal.client.esproj">
     <Build />
     <Deploy />
