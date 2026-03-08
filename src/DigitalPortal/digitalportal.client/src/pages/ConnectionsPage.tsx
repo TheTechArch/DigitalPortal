@@ -6,7 +6,7 @@ import type { ConnectionDto, ConnectionsFilter, PaginatedResult } from '../types
 import { defaultConnectionsFilter, buildConnectionsQueryString } from '../types/connections';
 import type { AuthorizedPartyDto } from '../types/authorizedParties';
 
-const READ_SCOPE = 'altinn:accessmanagement/enduser:connections:fromothers.read';
+const READ_SCOPE = 'altinn:accessmanagement/enduser.read';
 
 // ── Flatten party + subunits into a flat list for the picker ──────────────────
 
@@ -141,30 +141,6 @@ function FilterPanel({
         )}
       </div>
 
-      {/* Optional filters */}
-      <div className="space-y-3">
-        <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">from (valgfri)</label>
-          <input
-            type="text"
-            value={filter.from}
-            onChange={e => set('from', e.target.value)}
-            placeholder="UUID – filtrer på avsender"
-            className="w-full text-xs font-mono border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">to (valgfri)</label>
-          <input
-            type="text"
-            value={filter.to}
-            onChange={e => set('to', e.target.value)}
-            placeholder="UUID – filtrer på mottaker"
-            className="w-full text-xs font-mono border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
-          />
-        </div>
-      </div>
-
       <hr className="border-gray-100" />
 
       <div>
@@ -189,7 +165,7 @@ function FilterPanel({
       <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
         <p className="text-xs text-gray-400 font-medium mb-1">Generert spørring</p>
         <code className="text-xs text-gray-600 break-all font-mono">
-          GET /accessmanagement/api/v1/enduser/connections{buildConnectionsQueryString(filter) || '?party=…'}
+          GET /accessmanagement/api/v1/connection/rightholders{buildConnectionsQueryString(filter) || '?party=…'}
         </code>
       </div>
     </div>
@@ -330,7 +306,7 @@ export default function ConnectionsPage() {
     if (!filter.party.trim()) return;
     setIsLoading(true);
     setError(null);
-    fetch(`/api/accessmanagement/connections${buildConnectionsQueryString(filter)}`)
+    fetch(`/api/accessmanagement/rightholders${buildConnectionsQueryString(filter)}`)
       .then(async res => {
         if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
         return res.json() as Promise<PaginatedResult<ConnectionDto>>;

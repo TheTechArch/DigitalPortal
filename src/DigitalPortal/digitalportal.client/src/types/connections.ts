@@ -44,17 +44,13 @@ export interface PaginatedResult<T> {
 }
 
 export interface ConnectionsFilter {
-  party: string;                    // UUID – required by Altinn
-  from: string;                     // UUID – optional
-  to: string;                       // UUID – optional
+  party: string;                    // UUID – required by Altinn (selected from authorized parties)
   includeClientDelegations: boolean;
   includeAgentConnections: boolean;
 }
 
 export const defaultConnectionsFilter: ConnectionsFilter = {
   party: '',
-  from: '',
-  to: '',
   includeClientDelegations: true,
   includeAgentConnections: true,
 };
@@ -62,8 +58,6 @@ export const defaultConnectionsFilter: ConnectionsFilter = {
 export function buildConnectionsQueryString(f: ConnectionsFilter): string {
   const params = new URLSearchParams();
   if (f.party) params.set('party', f.party.trim());
-  if (f.from.trim()) params.set('from', f.from.trim());
-  if (f.to.trim()) params.set('to', f.to.trim());
   if (!f.includeClientDelegations) params.set('includeClientDelegations', 'false');
   if (!f.includeAgentConnections) params.set('includeAgentConnections', 'false');
   const qs = params.toString();

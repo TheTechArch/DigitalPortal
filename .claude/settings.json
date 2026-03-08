@@ -12,7 +12,14 @@
       "Bash(Remove-Item -Force \"d:/repos/DigitalPortal/src/DigitalPortal/Altinn.Authorization.Api.Contracts/obj/Debug/net10.0/Altinn.Authorization.Api.Contracts.AssemblyInfoInputs.cache\" -ErrorAction SilentlyContinue)",
       "Bash(dotnet clean DigitalPortal.Server/DigitalPortal.Server.csproj -q)",
       "Bash(dotnet clean -q)",
-      "Bash(dotnet build DigitalPortal.Server/DigitalPortal.Server.csproj)"
+      "Bash(dotnet build DigitalPortal.Server/DigitalPortal.Server.csproj)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:platform.tt02.altinn.no)",
+      "WebSearch",
+      "WebFetch(domain:altinn.github.io)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:www.altinn.no)",
+      "WebFetch(domain:api.github.com)"
     ]
   }
 }

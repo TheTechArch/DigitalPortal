@@ -330,7 +330,7 @@ export default function AuthCallbackPage() {
           <ApiFeatureCard
             title="Enduser tilkoblinger"
             description="Se systembrukere og agenter som har tilgang for en gitt part, med roller, tilgangspakker og ressurser per tilkobling."
-            scope="altinn:accessmanagement/enduser:connections:fromothers.read"
+            scope="altinn:accessmanagement/enduser.read"
             to="/enduser-connections"
             grantedScopes={tokenInfo.scopes}
             icon={
