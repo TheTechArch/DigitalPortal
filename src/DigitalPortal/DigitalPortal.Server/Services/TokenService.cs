@@ -14,13 +14,14 @@ public class TokenService(IConfiguration config, HttpClient httpClient, ILogger<
     public async Task<IdPortenTokenResponse?> ExchangeCodeAsync(string code, string codeVerifier)
     {
         var clientId = config["IdPorten:ClientId"]!;
-        var clientSecret = config["IdPorten:ClientSecret"]!;
+        var clientSecret = config["IdPorten:ClientSecret"];
         var redirectUri = config["IdPorten:RedirectUri"]!;
         var tokenEndpoint = config["IdPorten:TokenEndpoint"]!;
 
         var body = new Dictionary<string, string>
         {
             ["grant_type"] = "authorization_code",
+            ["client_id"] = clientId,
             ["code"] = code,
             ["redirect_uri"] = redirectUri,
             ["code_verifier"] = codeVerifier,
@@ -34,12 +35,13 @@ public class TokenService(IConfiguration config, HttpClient httpClient, ILogger<
     public async Task<IdPortenTokenResponse?> RefreshTokensAsync(string refreshToken)
     {
         var clientId = config["IdPorten:ClientId"]!;
-        var clientSecret = config["IdPorten:ClientSecret"]!;
+        var clientSecret = config["IdPorten:ClientSecret"];
         var tokenEndpoint = config["IdPorten:TokenEndpoint"]!;
 
         var body = new Dictionary<string, string>
         {
             ["grant_type"] = "refresh_token",
+            ["client_id"] = clientId,
             ["refresh_token"] = refreshToken,
         };
 
@@ -114,20 +116,19 @@ public class TokenService(IConfiguration config, HttpClient httpClient, ILogger<
     private async Task<IdPortenTokenResponse?> PostTokenRequest(
         string endpoint,
         string clientId,
-        string clientSecret,
+        string? clientSecret,
         Dictionary<string, string> extraParams)
     {
         try
         {
-            // Client authentication via Basic auth header (client_secret_basic)
-            var credentials = Convert.ToBase64String(
-                Encoding.UTF8.GetBytes($"{Uri.EscapeDataString(clientId)}:{Uri.EscapeDataString(clientSecret)}"));
+            // client_secret_post: secret goes in the POST body alongside client_id
+            if (!string.IsNullOrEmpty(clientSecret))
+                extraParams["client_secret"] = clientSecret;
 
             var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
             {
                 Content = new FormUrlEncodedContent(extraParams)
             };
-            request.Headers.Authorization = new AuthenticationHeaderValue("Basic", credentials);
 
             var response = await httpClient.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
