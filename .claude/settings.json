@@ -5,7 +5,14 @@
       "Bash(npm install @digdir/designsystemet-react @digdir/designsystemet-css @digdir/designsystemet-theme react-router-dom tailwindcss @tailwindcss/vite)",
       "Bash(npx tsc --noEmit)",
       "Bash(npm install react-i18next i18next)",
-      "Read(//d/repos/**)"
+      "Read(//d/repos/**)",
+      "Bash(dotnet build --no-restore -q)",
+      "Bash(dotnet build DigitalPortal.Server.csproj -q)",
+      "Bash(dotnet build DigitalPortal.Server/DigitalPortal.Server.csproj -q)",
+      "Bash(Remove-Item -Force \"d:/repos/DigitalPortal/src/DigitalPortal/Altinn.Authorization.Api.Contracts/obj/Debug/net10.0/Altinn.Authorization.Api.Contracts.AssemblyInfoInputs.cache\" -ErrorAction SilentlyContinue)",
+      "Bash(dotnet clean DigitalPortal.Server/DigitalPortal.Server.csproj -q)",
+      "Bash(dotnet clean -q)",
+      "Bash(dotnet build DigitalPortal.Server/DigitalPortal.Server.csproj)"
     ]
   }
 }
