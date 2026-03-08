@@ -1,0 +1,75 @@
+## .NET / ASP.NET Core
+
+# Build outputs
+bin/
+obj/
+out/
+
+# User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio
+.vs/
+*.rsuser
+
+# NuGet
+*.nupkg
+*.snupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+packages/
+
+# .NET publish
+publish/
+
+# App secrets (never commit)
+appsettings.*.local.json
+secrets.json
+
+## Node / React / Frontend
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+## Editor & OS
+
+# VSCode (keep extensions.json)
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# JetBrains IDEs
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+## HTTPS Dev Certs (generated at runtime)
+*.pfx
+aspnetapp.pem
+aspnetapp-key.pem
