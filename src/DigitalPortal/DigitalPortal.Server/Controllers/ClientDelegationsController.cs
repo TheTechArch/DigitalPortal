@@ -8,7 +8,7 @@ namespace DigitalPortal.Server.Controllers;
 public class ClientDelegationsController(
     IConfiguration config,
     IHttpClientFactory httpClientFactory,
-    ILogger<ClientDelegationsController> logger)
+    ILogger<ClientDelegationsController> logger) : ControllerBase
 {
     // GET /api/clientdelegations/myclients
     // Requires dp_altinn_token cookie and altinn:clientdelegations/myclients.read scope.
