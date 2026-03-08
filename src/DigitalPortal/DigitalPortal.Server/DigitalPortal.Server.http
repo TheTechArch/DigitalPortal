@@ -1,0 +1,6 @@
+@DigitalPortal.Server_HostAddress = http://localhost:5069
+
+GET {{DigitalPortal.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="digitalportal.client/digitalportal.client.esproj">
+    <Build />
+    <Deploy />
+  </Project>
+  <Project Path="DigitalPortal.Server/DigitalPortal.Server.csproj" />
+</Solution>
