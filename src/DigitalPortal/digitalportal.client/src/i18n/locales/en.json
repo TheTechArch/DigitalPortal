@@ -1,0 +1,94 @@
+{
+  "nav": {
+    "home": "Home",
+    "sluttbrukerApi": "End-User API",
+    "tjenesteeigerApi": "Service Owner API",
+    "pdp": "PDP",
+    "altinnDocs": "Altinn documentation"
+  },
+  "footer": {
+    "tagline": "Reference implementation for Altinn access control",
+    "org": "Norwegian Digitalisation Agency"
+  },
+  "lang": {
+    "switchTo": "Bytt til norsk",
+    "current": "English"
+  },
+  "landing": {
+    "badge": "Reference implementation – Altinn authorisation",
+    "hero": {
+      "title": "Access control with Altinn in your own portal",
+      "description": "A practical reference implementation for public service owners who want to use Altinn's authorisation platform to manage access in their own portal and platform solutions. Explore the end-user API, service owner API and PDP with live examples.",
+      "exploreBtn": "Explore the demos",
+      "docsBtn": "Read the documentation"
+    },
+    "features": {
+      "heading": "What does DigitalPortal demonstrate?",
+      "subheading": "Three main sections cover the most important integration points with Altinn authorisation.",
+      "explore": "Explore",
+      "sluttbruker": {
+        "tag": "User-facing",
+        "title": "End-User API",
+        "description": "Demonstrates access control from the end user's perspective. See how a user can log in, retrieve their rights, and access services on behalf of themselves or an organisation."
+      },
+      "tjenesteeiger": {
+        "tag": "Service owner-controlled",
+        "title": "Service Owner API",
+        "description": "Shows how you as a service owner can manage access to your services. Create and manage resources, delegate rights, and control who has access to what."
+      },
+      "pdp": {
+        "tag": "Authorisation",
+        "title": "Policy Decision Point (PDP)",
+        "description": "Integrate Altinn's PDP directly into your application to make authorisation decisions in real time. See examples of XACML-based requests and responses for access control."
+      }
+    },
+    "highlights": {
+      "heading": "Why use Altinn for access control?",
+      "subheading": "Altinn has built access control infrastructure that you can reuse in your own solution.",
+      "realtime": {
+        "title": "Real-time access control",
+        "text": "Make authorisation decisions directly in your portal via Altinn PDP without extra round trips."
+      },
+      "standards": {
+        "title": "Standards-based security",
+        "text": "XACML, Maskinporten and ID-porten – build on established, secure standards."
+      },
+      "public": {
+        "title": "For public service owners",
+        "text": "Designed for organisations that want to use Altinn as an authoritative source for access."
+      },
+      "ready": {
+        "title": "Ready to use",
+        "text": "Reference code you can use directly as a starting point for your own implementation."
+      }
+    },
+    "cta": {
+      "heading": "Get started",
+      "subheading": "Choose one of the demo sections and see code and API calls in practice."
+    }
+  },
+  "sluttbrukerApi": {
+    "badge": "End-User API",
+    "heading": "Access control via the end-user API",
+    "description": "This section demonstrates how an end user can authenticate via ID-porten and retrieve their rights and access through Altinn's end-user API.",
+    "wip": "Under development – demo content coming here."
+  },
+  "tjenesteeigerApi": {
+    "badge": "Service Owner API",
+    "heading": "Access management via the service owner API",
+    "description": "This shows how you as a service owner use Maskinporten and Altinn's service owner API to create resources, manage rights and control access in your services.",
+    "wip": "Under development – demo content coming here."
+  },
+  "pdp": {
+    "badge": "Authorisation",
+    "heading": "Policy Decision Point (PDP)",
+    "description": "Demonstrates integration with Altinn's PDP to make authorisation decisions in real time. See XACML requests and responses, and understand how you can use PDP directly in your application logic.",
+    "wip": "Under development – demo content coming here."
+  },
+  "notFound": {
+    "code": "404",
+    "heading": "Page not found",
+    "description": "The page you are looking for does not exist or has been moved.",
+    "backBtn": "Go to the front page"
+  }
+}
