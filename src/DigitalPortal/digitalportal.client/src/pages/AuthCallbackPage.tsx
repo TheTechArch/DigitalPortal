@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Heading, Paragraph, Button, Spinner } from '@digdir/designsystemet-react';
 import { getMe } from '../services/authService';
 import { useTokenRefresh } from '../hooks/useTokenRefresh';
@@ -40,6 +40,73 @@ function formatClaimValue(value: unknown): string {
     return `${value} (${date.toLocaleString('nb-NO')})`;
   }
   return String(value ?? '');
+}
+
+// ── API feature card ──────────────────────────────────────────────────────────
+
+function ApiFeatureCard({
+  title,
+  description,
+  scope,
+  to,
+  grantedScopes,
+  icon,
+}: {
+  title: string;
+  description: string;
+  scope: string;
+  to: string;
+  grantedScopes: string[];
+  icon: React.ReactNode;
+}) {
+  const hasScope = grantedScopes.includes(scope);
+
+  return (
+    <div className={`relative rounded-xl border p-5 transition-shadow ${
+      hasScope
+        ? 'bg-white border-gray-200 hover:shadow-md'
+        : 'bg-gray-50 border-gray-200 opacity-70'
+    }`}>
+      <div className="flex items-start gap-4">
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+          hasScope ? 'text-white' : 'bg-gray-200 text-gray-400'
+        }`} style={hasScope ? { backgroundColor: '#1E4D8C' } : {}}>
+          {icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <p className="font-semibold text-gray-900 text-sm">{title}</p>
+            {hasScope ? (
+              <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Tilgjengelig</span>
+            ) : (
+              <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-medium">Mangler scope</span>
+            )}
+          </div>
+          <Paragraph data-size="sm" className="text-gray-600 mb-3">{description}</Paragraph>
+          <code className="text-xs text-gray-400 font-mono block mb-3">{scope}</code>
+          {hasScope ? (
+            <Link
+              to={to}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-white px-3 py-1.5 rounded-lg no-underline transition-opacity hover:opacity-90"
+              style={{ backgroundColor: '#1E4D8C' }}
+            >
+              Åpne
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-600 px-3 py-1.5 rounded-lg border border-gray-300 bg-white no-underline hover:bg-gray-50 transition-colors"
+            >
+              Logg inn med scopet
+            </Link>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 // ── Tab definitions ──────────────────────────────────────────────────────────
@@ -223,6 +290,30 @@ export default function AuthCallbackPage() {
               {sc}
             </code>
           ))}
+        </div>
+      </div>
+
+      {/* API feature cards */}
+      <div className="mb-8">
+        <Heading level={2} data-size="xs" className="mb-3 text-gray-500 uppercase tracking-wide">
+          Tilgjengelige API-demonstrasjoner
+        </Heading>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <ApiFeatureCard
+            title="Mine klienter"
+            description="Se organisasjoner og systemer som har fått delegert tilgang til å opptre på dine vegne via klientdelegering."
+            scope="altinn:clientdelegations/myclients.read"
+            to="/mine-klienter"
+            grantedScopes={tokenInfo.scopes}
+            icon={
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                <circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              </svg>
+            }
+          />
         </div>
       </div>
 
