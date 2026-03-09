@@ -7,7 +7,7 @@ import type { ConnectionDto, PaginatedResult } from '../types/connections';
 
 const REQUIRED_SCOPES = [
   'altinn:accessmanagement/enduser:connections:fromothers.read',
-  'altinn:accessmanagement/enduser:connections:toothers.write',
+  'altinn:accessmanagement/enduser:connections:toothers.read',
 ];
 
 const RESOURCE_FILTER = 'altinn_access_management';
@@ -334,9 +334,8 @@ export default function ConnectionsPage() {
                   checked={direction === 'to'}
                   onChange={() => setDirection((d) => (d === 'from' ? 'to' : 'from'))}
                   data-size="md"
-                >
-                  {direction === 'from' ? 'Fra' : 'Til'}
-                </Switch>
+                  label={direction === 'from' ? 'Fra' : 'Til'}
+                />
                 <span className={`text-sm ${direction === 'to' ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>
                   Til part
                 </span>
