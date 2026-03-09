@@ -4,6 +4,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddHttpClient<DigitalPortal.Server.Services.TokenService>();
+builder.Services.AddSingleton<DigitalPortal.Server.Services.AccessManagementService>();
+builder.Services.AddSingleton<DigitalPortal.Server.Services.ClientDelegationsService>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
