@@ -120,7 +120,7 @@ export default function LandingPage() {
                 variant="secondary"
                 style={{ borderColor: 'rgba(255,255,255,0.5)', color: 'white', backgroundColor: 'transparent' }}
               >
-                <a href="https://docs.altinn.studio/authentication/reference/architecture/accessmanagement/" target="_blank" rel="noopener noreferrer">
+                <a href="https://docs.altinn.studio/nb/authorization/guides/resource-owner/" target="_blank" rel="noopener noreferrer">
                   Les dokumentasjonen
                 </a>
               </Button>
