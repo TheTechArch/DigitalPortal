@@ -55,4 +55,52 @@ public class ConnectionsController(ConnectionsService connectionsService) : Cont
             return StatusCode(500, new { error = "Failed to contact Altinn API." });
         }
     }
+
+    // GET /api/connections/accesspackages/delegationcheck?party=uuid
+    [HttpGet("accesspackages/delegationcheck")]
+    public async Task<IActionResult> GetDelegationCheck()
+    {
+        var altinnToken = Request.Cookies["dp_altinn_token"];
+        if (string.IsNullOrEmpty(altinnToken))
+            return Unauthorized(new { error = "No Altinn token. Please log in with the required scopes." });
+
+        try
+        {
+            var queryString = Request.QueryString.Value ?? string.Empty;
+            var (result, error, statusCode) = await connectionsService.GetDelegationCheckAsync(altinnToken, queryString);
+
+            if (result is null)
+                return StatusCode(statusCode, error);
+
+            return Ok(result);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = "Failed to contact Altinn API." });
+        }
+    }
+
+    // POST /api/connections/accesspackages?party=uuid&to=uuid&package=urn  body: { personIdentifier, lastName }
+    [HttpPost("accesspackages")]
+    public async Task<IActionResult> DelegatePackage([FromBody] PersonInputDto input)
+    {
+        var altinnToken = Request.Cookies["dp_altinn_token"];
+        if (string.IsNullOrEmpty(altinnToken))
+            return Unauthorized(new { error = "No Altinn token. Please log in with the required scopes." });
+
+        try
+        {
+            var queryString = Request.QueryString.Value ?? string.Empty;
+            var (result, error, statusCode) = await connectionsService.DelegatePackageAsync(altinnToken, queryString, input);
+
+            if (result is null)
+                return StatusCode(statusCode, error);
+
+            return Ok(result);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { error = "Failed to contact Altinn API." });
+        }
+    }
 }

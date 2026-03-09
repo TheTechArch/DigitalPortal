@@ -59,3 +59,28 @@ export interface AssignmentDto {
   fromId: string;
   toId: string;
 }
+
+export interface DelegationCheckReason {
+  description: string | null;
+  roleId?: string | null;
+  roleUrn?: string | null;
+  fromId?: string | null;
+  fromName?: string | null;
+  toId?: string | null;
+  toName?: string | null;
+  viaId?: string | null;
+  viaName?: string | null;
+  viaRoleId?: string | null;
+}
+
+export interface AccessPackageDtoCheck {
+  package: AccessPackage;
+  result: boolean;
+  reasons: DelegationCheckReason[] | null;
+}
+
+export interface AssignmentPackageDto {
+  id: string;
+  assignmentId: string;
+  packageId: string;
+}

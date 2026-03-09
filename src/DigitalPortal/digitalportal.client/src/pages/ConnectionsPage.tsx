@@ -4,7 +4,7 @@ import { Heading, Paragraph, Spinner, Tabs } from '@digdir/designsystemet-react'
 import { useAuth } from '../hooks/useAuth';
 import RawResponseToggle from '../components/RawResponseToggle';
 import type { AuthorizedPartyDto, PaginatedResult as PartyPaginatedResult } from '../types/authorizedParties';
-import type { ConnectionDto, PaginatedResult, AssignmentDto } from '../types/connections';
+import type { ConnectionDto, PaginatedResult, AssignmentDto, AccessPackageDtoCheck, AssignmentPackageDto } from '../types/connections';
 
 const REQUIRED_SCOPES = [
   'altinn:accessmanagement/enduser:connections:fromothers.read',
@@ -49,7 +49,7 @@ function PartySelector({
 
 // ── Connection card ──────────────────────────────────────────────────────────
 
-function ConnectionCard({ connection }: { connection: ConnectionDto }) {
+function ConnectionCard({ connection, selectedParty }: { connection: ConnectionDto; selectedParty: string }) {
   const party = connection.party;
   const roles = connection.roles ?? [];
   const packages = connection.packages ?? [];
@@ -144,6 +144,7 @@ function ConnectionCard({ connection }: { connection: ConnectionDto }) {
           )}
         </div>
       </div>
+      <DelegatePackagePanel selectedParty={selectedParty} connection={connection} />
     </div>
   );
 }
@@ -291,6 +292,190 @@ function AddConnectionForm({
   );
 }
 
+// ── Delegate package form ────────────────────────────────────────────────────
+
+function DelegatePackagePanel({
+  selectedParty,
+  connection,
+}: {
+  selectedParty: string;
+  connection: ConnectionDto;
+}) {
+  const [open, setOpen] = useState(false);
+  const [packages, setPackages] = useState<AccessPackageDtoCheck[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [delegating, setDelegating] = useState<string | null>(null);
+  const [delegateError, setDelegateError] = useState<string | null>(null);
+  const [delegateSuccess, setDelegateSuccess] = useState<AssignmentPackageDto | null>(null);
+
+  const toPartyId = connection.party.id;
+
+  const fetchDelegablePackages = () => {
+    setLoading(true);
+    setError(null);
+    const params = new URLSearchParams();
+    params.set('party', selectedParty);
+
+    fetch(`/api/connections/accesspackages/delegationcheck?${params.toString()}`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+        return res.json() as Promise<{ data: AccessPackageDtoCheck[] }>;
+      })
+      .then((data) => setPackages(data.data ?? []))
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  };
+
+  const handleDelegate = async (pkg: AccessPackageDtoCheck) => {
+    setDelegating(pkg.package.id);
+    setDelegateError(null);
+    setDelegateSuccess(null);
+
+    const params = new URLSearchParams();
+    params.set('party', selectedParty);
+    params.set('to', toPartyId);
+    params.set('package', pkg.package.urn ?? '');
+
+    try {
+      const res = await fetch(`/api/connections/accesspackages?${params.toString()}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          personIdentifier: connection.party.personIdentifier ?? '',
+          lastName: '',
+        }),
+      });
+      const text = await res.text();
+      if (!res.ok) throw new Error(`${res.status}: ${text}`);
+      const result = JSON.parse(text) as AssignmentPackageDto;
+      setDelegateSuccess(result);
+    } catch (err) {
+      setDelegateError(err instanceof Error ? err.message : 'Ukjent feil');
+    } finally {
+      setDelegating(null);
+    }
+  };
+
+  const delegable = packages.filter((p) => p.result);
+  const notDelegable = packages.filter((p) => !p.result);
+
+  return (
+    <div className="mt-3 ml-12">
+      <button
+        onClick={() => {
+          setOpen(!open);
+          if (!open && packages.length === 0) fetchDelegablePackages();
+        }}
+        className="flex items-center gap-1.5 text-xs font-medium cursor-pointer hover:opacity-80 transition-opacity"
+        style={{ color: '#1E4D8C' }}
+      >
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          className={`transition-transform ${open ? 'rotate-90' : ''}`}
+        >
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+        Deleger pakker
+      </button>
+
+      {open && (
+        <div className="mt-3 bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-3">
+          {loading && (
+            <div className="flex items-center gap-2 text-gray-500 text-sm">
+              <Spinner aria-label="Sjekker..." data-size="sm" />
+              Sjekker delegerbare pakker...
+            </div>
+          )}
+
+          {error && (
+            <div className="text-sm text-red-600">Feil: {error}</div>
+          )}
+
+          {!loading && !error && packages.length === 0 && (
+            <p className="text-sm text-gray-500">Ingen pakker funnet for delegering.</p>
+          )}
+
+          {delegable.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                Kan delegeres ({delegable.length})
+              </p>
+              <div className="space-y-2">
+                {delegable.map((pkg) => (
+                  <div
+                    key={pkg.package.id}
+                    className="flex items-center justify-between bg-white border border-gray-200 rounded-lg px-3 py-2"
+                  >
+                    <div>
+                      <code className="text-xs font-mono text-green-700">
+                        {pkg.package.urn?.split(':').pop() ?? pkg.package.id}
+                      </code>
+                      <p className="text-xs text-gray-400 font-mono">{pkg.package.urn}</p>
+                    </div>
+                    <button
+                      onClick={() => handleDelegate(pkg)}
+                      disabled={delegating === pkg.package.id}
+                      className="text-xs px-3 py-1.5 rounded-lg text-white font-medium cursor-pointer transition-opacity hover:opacity-90 disabled:opacity-50"
+                      style={{ backgroundColor: '#1E4D8C' }}
+                    >
+                      {delegating === pkg.package.id ? 'Delegerer...' : 'Deleger'}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {notDelegable.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-gray-400 mb-2">
+                Kan ikke delegeres ({notDelegable.length})
+              </p>
+              <div className="space-y-2">
+                {notDelegable.map((pkg) => (
+                  <div
+                    key={pkg.package.id}
+                    className="bg-white border border-gray-100 rounded-lg px-3 py-2 opacity-60"
+                  >
+                    <code className="text-xs font-mono text-gray-500">
+                      {pkg.package.urn?.split(':').pop() ?? pkg.package.id}
+                    </code>
+                    {pkg.reasons && pkg.reasons.length > 0 && (
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {pkg.reasons.map((r) => r.description).join(', ')}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {delegateError && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+              <span className="font-medium">Feil:</span> {delegateError}
+            </div>
+          )}
+
+          {delegateSuccess && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
+              Pakke delegert! ID: <code className="font-mono">{delegateSuccess.id}</code>
+            </div>
+          )}
+
+          <RawResponseToggle data={packages} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Result panel (shared by both tabs) ────────────────────────────────────────
 
 function ConnectionsResultPanel({
@@ -298,12 +483,14 @@ function ConnectionsResultPanel({
   isLoading,
   error,
   connections,
+  selectedParty,
   onRefresh,
 }: {
   direction: 'from' | 'to';
   isLoading: boolean;
   error: string | null;
   connections: ConnectionDto[];
+  selectedParty: string;
   onRefresh: () => void;
 }) {
   if (isLoading) {
@@ -355,7 +542,7 @@ function ConnectionsResultPanel({
       ) : (
         <div className="space-y-3">
           {connections.map((conn, i) => (
-            <ConnectionCard key={conn.party?.id ?? i} connection={conn} />
+            <ConnectionCard key={conn.party?.id ?? i} connection={conn} selectedParty={selectedParty} />
           ))}
         </div>
       )}
@@ -586,6 +773,7 @@ export default function ConnectionsPage() {
               isLoading={connectionsLoading}
               error={connectionsError}
               connections={connectionsList}
+              selectedParty={selectedParty!}
               onRefresh={fetchConnections}
             />
           </Tabs.Panel>
@@ -596,6 +784,7 @@ export default function ConnectionsPage() {
               isLoading={connectionsLoading}
               error={connectionsError}
               connections={connectionsList}
+              selectedParty={selectedParty!}
               onRefresh={fetchConnections}
             />
           </Tabs.Panel>

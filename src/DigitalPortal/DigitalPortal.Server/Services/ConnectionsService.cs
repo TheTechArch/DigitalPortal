@@ -72,4 +72,58 @@ public class ConnectionsService(
         var result = JsonSerializer.Deserialize<AssignmentDto>(content, JsonOptions);
         return (result, null, (int)response.StatusCode);
     }
+
+    public async Task<(PaginatedResultDto<List<AccessPackageDto.AccessPackageDtoCheck>>? Result, string? Error, int StatusCode)>
+        GetDelegationCheckAsync(string altinnToken, string queryString)
+    {
+        var baseUrl = config["Altinn:AccessManagementBaseUrl"]
+            ?? "https://platform.tt02.altinn.no";
+
+        var endpoint = $"{baseUrl}/accessmanagement/api/v1/enduser/connections/accesspackages/delegationcheck{queryString}";
+
+        var httpClient = httpClientFactory.CreateClient();
+        var request = new HttpRequestMessage(HttpMethod.Get, endpoint);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", altinnToken);
+
+        var response = await httpClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning("Altinn delegation check returned {Status}: {Body}", response.StatusCode, content);
+            return (null, content, (int)response.StatusCode);
+        }
+
+        var result = JsonSerializer.Deserialize<PaginatedResultDto<List<AccessPackageDto.AccessPackageDtoCheck>>>(content, JsonOptions);
+        return (result, null, (int)response.StatusCode);
+    }
+
+    public async Task<(AssignmentPackageDto? Result, string? Error, int StatusCode)>
+        DelegatePackageAsync(string altinnToken, string queryString, PersonInputDto input)
+    {
+        var baseUrl = config["Altinn:AccessManagementBaseUrl"]
+            ?? "https://platform.tt02.altinn.no";
+
+        var endpoint = $"{baseUrl}/accessmanagement/api/v1/enduser/connections/accesspackages{queryString}";
+
+        var httpClient = httpClientFactory.CreateClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", altinnToken);
+        request.Content = new StringContent(
+            JsonSerializer.Serialize(input, CamelCaseOptions),
+            System.Text.Encoding.UTF8,
+            "application/json");
+
+        var response = await httpClient.SendAsync(request);
+        var content = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            logger.LogWarning("Altinn delegate package returned {Status}: {Body}", response.StatusCode, content);
+            return (null, content, (int)response.StatusCode);
+        }
+
+        var result = JsonSerializer.Deserialize<AssignmentPackageDto>(content, JsonOptions);
+        return (result, null, (int)response.StatusCode);
+    }
 }
