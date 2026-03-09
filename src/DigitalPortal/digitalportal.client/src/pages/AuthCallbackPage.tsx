@@ -327,6 +327,19 @@ export default function AuthCallbackPage() {
               </svg>
             }
           />
+          <ApiFeatureCard
+            title="Tilkoblinger"
+            description="Se tilkoblinger mellom parter. Velg en autorisert part og utforsk hvem som har tilkoblinger fra eller til den valgte parten."
+            scope="altinn:accessmanagement/enduser:connections:fromothers.read"
+            to="/tilkoblinger"
+            grantedScopes={tokenInfo.scopes}
+            icon={
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3" />
+                <line x1="8" y1="12" x2="16" y2="12" />
+              </svg>
+            }
+          />
         </div>
       </div>
 

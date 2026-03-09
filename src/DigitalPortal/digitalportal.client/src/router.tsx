@@ -8,6 +8,7 @@ import TjenesteeigerApiPage from './pages/TjenesteeigerApiPage';
 import PdpPage from './pages/PdpPage';
 import MyClientsPage from './pages/MyClientsPage';
 import AutoriserteParterPage from './pages/AutoriserteParterPage';
+import ConnectionsPage from './pages/ConnectionsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 const router = createBrowserRouter([
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
       { path: 'pdp', element: <PdpPage /> },
       { path: 'mine-klienter', element: <MyClientsPage /> },
       { path: 'autoriserte-parter', element: <AutoriserteParterPage /> },
+      { path: 'tilkoblinger', element: <ConnectionsPage /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

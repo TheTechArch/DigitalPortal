@@ -44,6 +44,20 @@ const features = [
     tag: 'Autorisasjon',
     tagColor: 'bg-purple-100 text-purple-800',
   },
+  {
+    to: '/tilkoblinger',
+    icon: (
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75">
+        <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3" />
+        <line x1="8" y1="12" x2="16" y2="12" />
+      </svg>
+    ),
+    title: 'Tilkoblinger',
+    description:
+      'Se tilkoblinger mellom parter i Altinn. Velg en autorisert part og utforsk hvem som har tilkoblinger fra eller til den valgte parten, med roller, tilgangspakker og ressurser.',
+    tag: 'Connections',
+    tagColor: 'bg-teal-100 text-teal-800',
+  },
 ];
 
 const highlights = [
@@ -122,11 +136,11 @@ export default function LandingPage() {
             Hva demonstrerer DigitalPortal?
           </Heading>
           <Paragraph data-size="lg" className="text-gray-600 max-w-2xl mx-auto">
-            Tre hoveddeler dekker de viktigste integrasjonspunktene mot Altinn autorisasjon.
+            Fire hoveddeler dekker de viktigste integrasjonspunktene mot Altinn autorisasjon.
           </Paragraph>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {features.map((f) => (
             <Link key={f.to} to={f.to} className="no-underline group">
               <Card className="h-full p-6 border border-gray-200 rounded-xl bg-white hover:shadow-lg hover:border-blue-200 transition-all duration-200 group-hover:-translate-y-1">
