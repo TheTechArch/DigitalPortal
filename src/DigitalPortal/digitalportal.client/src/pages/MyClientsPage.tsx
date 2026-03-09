@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heading, Paragraph, Spinner } from '@digdir/designsystemet-react';
 import { useAuth } from '../hooks/useAuth';
+import RawResponseToggle from '../components/RawResponseToggle';
 import type { MyClient, PaginatedResult } from '../types/clientDelegations';
 
 const REQUIRED_SCOPE = 'altinn:clientdelegations/myclients.read';
@@ -271,6 +272,8 @@ export default function MyClientsPage() {
               <ProviderSection key={group.provider.id} group={group} />
             ))}
           </div>
+
+          <RawResponseToggle data={result} />
         </>
       )}
     </div>

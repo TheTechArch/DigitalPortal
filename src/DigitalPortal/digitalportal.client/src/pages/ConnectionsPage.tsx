@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heading, Paragraph, Spinner, Tabs } from '@digdir/designsystemet-react';
 import { useAuth } from '../hooks/useAuth';
+import RawResponseToggle from '../components/RawResponseToggle';
 import type { AuthorizedPartyDto, PaginatedResult as PartyPaginatedResult } from '../types/authorizedParties';
 import type { ConnectionDto, PaginatedResult, AssignmentDto } from '../types/connections';
 
@@ -600,6 +601,8 @@ export default function ConnectionsPage() {
           </Tabs.Panel>
         </Tabs>
       )}
+
+      <RawResponseToggle data={connections} />
     </div>
   );
 }

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Heading, Paragraph, Spinner } from '@digdir/designsystemet-react';
 import { useAuth } from '../hooks/useAuth';
+import RawResponseToggle from '../components/RawResponseToggle';
 import type {
   AuthorizedPartyDto,
   AuthorizedPartiesFilter,
@@ -453,6 +454,8 @@ export default function AutoriserteParterPage() {
                   ))}
                 </div>
               )}
+
+              <RawResponseToggle data={result} />
             </>
           )}
         </div>

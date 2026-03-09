@@ -14,7 +14,7 @@ public class ClientDelegationsService(
         PropertyNameCaseInsensitive = true
     };
 
-    public async Task<(List<MyClientDto>? Result, string? Error, int StatusCode)>
+    public async Task<(PaginatedResultDto<List<MyClientDto>>? Result, string? Error, int StatusCode)>
         GetMyClientsAsync(string altinnToken)
     {
         var baseUrl = config["Altinn:AccessManagementBaseUrl"]
@@ -35,7 +35,7 @@ public class ClientDelegationsService(
             return (null, content, (int)response.StatusCode);
         }
 
-        var result = JsonSerializer.Deserialize<List<MyClientDto>>(content, JsonOptions);
+        var result = JsonSerializer.Deserialize<PaginatedResultDto<List<MyClientDto>>>(content, JsonOptions);
         return (result, null, (int)response.StatusCode);
     }
 }
