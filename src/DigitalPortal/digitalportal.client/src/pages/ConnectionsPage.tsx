@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heading, Paragraph, Spinner, Switch } from '@digdir/designsystemet-react';
+import { Heading, Paragraph, Spinner, Tabs } from '@digdir/designsystemet-react';
 import { useAuth } from '../hooks/useAuth';
 import type { AuthorizedPartyDto, PaginatedResult as PartyPaginatedResult } from '../types/authorizedParties';
 import type { ConnectionDto, PaginatedResult } from '../types/connections';
@@ -147,6 +147,78 @@ function ConnectionCard({ connection }: { connection: ConnectionDto }) {
   );
 }
 
+// ── Result panel (shared by both tabs) ────────────────────────────────────────
+
+function ConnectionsResultPanel({
+  direction,
+  isLoading,
+  error,
+  connections,
+  onRefresh,
+}: {
+  direction: 'from' | 'to';
+  isLoading: boolean;
+  error: string | null;
+  connections: ConnectionDto[];
+  onRefresh: () => void;
+}) {
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center gap-3 py-20 text-gray-500">
+        <Spinner aria-label="Henter..." />
+        <span className="text-sm">Henter tilkoblinger fra Altinn...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center mt-4">
+        <Heading level={2} data-size="sm" className="text-red-800 mb-2">
+          Feil
+        </Heading>
+        <code className="text-sm text-red-700 block">{error}</code>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-4">
+      <div className="flex items-center justify-between mb-4 px-1">
+        <p className="text-sm text-gray-500">
+          {connections.length} tilkobling{connections.length !== 1 ? 'er' : ''}
+          {' · '}
+          {direction === 'from' ? 'fra' : 'til'} valgt part
+        </p>
+        <button
+          onClick={onRefresh}
+          className="text-xs text-gray-500 hover:text-gray-800 flex items-center gap-1 cursor-pointer"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polyline points="1 4 1 10 7 10" />
+            <path d="M3.51 15a9 9 0 1 0 .49-4.96" />
+          </svg>
+          Oppdater
+        </button>
+      </div>
+
+      {connections.length === 0 ? (
+        <div className="text-center py-16 bg-gray-50 border border-gray-200 rounded-2xl">
+          <Paragraph className="text-gray-400">
+            Ingen tilkoblinger funnet {direction === 'from' ? 'fra' : 'til'} denne parten.
+          </Paragraph>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {connections.map((conn, i) => (
+            <ConnectionCard key={conn.party?.id ?? i} connection={conn} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main page ────────────────────────────────────────────────────────────────
 
 export default function ConnectionsPage() {
@@ -286,8 +358,9 @@ export default function ConnectionsPage() {
           </Heading>
         </div>
         <Paragraph className="text-gray-600">
-          Se tilkoblinger (connections) mellom parter. Velg en autorisert part og velg om du vil se tilkoblinger fra
-          eller til den valgte parten.
+          Se tilkoblinger (connections) mellom parter. Tilkoblinger er tilgjengelig for alle aktører du har
+          tilgangsstyringsrettighet for. Velg en autorisert part og velg om du vil se tilkoblinger fra eller til den
+          valgte parten.
         </Paragraph>
         <div className="mt-2 flex items-center gap-2 flex-wrap">
           {REQUIRED_SCOPES.map((s) => (
@@ -301,11 +374,10 @@ export default function ConnectionsPage() {
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar */}
-        <div className="w-full lg:w-80 flex-shrink-0">
+      {/* Party selector + query preview */}
+      <div className="mb-8">
+        <div className="w-full">
           <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-5">
-            {/* Party selector */}
             {partiesLoading ? (
               <div className="flex items-center gap-2 text-gray-500 text-sm">
                 <Spinner aria-label="Henter parter..." data-size="sm" />
@@ -323,32 +395,6 @@ export default function ConnectionsPage() {
 
             <hr className="border-gray-100" />
 
-            {/* Direction switch */}
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">Retning</p>
-              <div className="flex items-center gap-3">
-                <span className={`text-sm ${direction === 'from' ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>
-                  Fra part
-                </span>
-                <Switch
-                  checked={direction === 'to'}
-                  onChange={() => setDirection((d) => (d === 'from' ? 'to' : 'from'))}
-                  data-size="md"
-                  label={direction === 'from' ? 'Fra' : 'Til'}
-                />
-                <span className={`text-sm ${direction === 'to' ? 'text-gray-900 font-medium' : 'text-gray-400'}`}>
-                  Til part
-                </span>
-              </div>
-              <p className="text-xs text-gray-400 mt-2">
-                {direction === 'from'
-                  ? 'Viser tilkoblinger der valgt part er avsender (from)'
-                  : 'Viser tilkoblinger der valgt part er mottaker (to)'}
-              </p>
-            </div>
-
-            <hr className="border-gray-100" />
-
             {/* Query preview */}
             <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
               <p className="text-xs text-gray-400 font-medium mb-1">Generert spørring</p>
@@ -361,74 +407,51 @@ export default function ConnectionsPage() {
             </div>
           </div>
         </div>
-
-        {/* Results */}
-        <div className="flex-1 min-w-0">
-          {!selectedParty && (
-            <div className="text-center py-20 bg-gray-50 border border-gray-200 rounded-2xl">
-              <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
-                  <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3" />
-                  <line x1="8" y1="12" x2="16" y2="12" />
-                </svg>
-              </div>
-              <Paragraph className="text-gray-400">Velg en part for å hente tilkoblinger</Paragraph>
-            </div>
-          )}
-
-          {connectionsLoading && (
-            <div className="flex justify-center items-center gap-3 py-20 text-gray-500">
-              <Spinner aria-label="Henter..." />
-              <span className="text-sm">Henter tilkoblinger fra Altinn...</span>
-            </div>
-          )}
-
-          {connectionsError && (
-            <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
-              <Heading level={2} data-size="sm" className="text-red-800 mb-2">
-                Feil
-              </Heading>
-              <code className="text-sm text-red-700 block">{connectionsError}</code>
-            </div>
-          )}
-
-          {selectedParty && !connectionsLoading && !connectionsError && (
-            <>
-              <div className="flex items-center justify-between mb-4 px-1">
-                <p className="text-sm text-gray-500">
-                  {connectionsList.length} tilkobling{connectionsList.length !== 1 ? 'er' : ''}
-                  {' · '}
-                  {direction === 'from' ? 'fra' : 'til'} valgt part
-                </p>
-                <button
-                  onClick={fetchConnections}
-                  className="text-xs text-gray-500 hover:text-gray-800 flex items-center gap-1 cursor-pointer"
-                >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <polyline points="1 4 1 10 7 10" />
-                    <path d="M3.51 15a9 9 0 1 0 .49-4.96" />
-                  </svg>
-                  Oppdater
-                </button>
-              </div>
-
-              {connectionsList.length === 0 ? (
-                <div className="text-center py-16 bg-gray-50 border border-gray-200 rounded-2xl">
-                  <Paragraph className="text-gray-400">
-                    Ingen tilkoblinger funnet {direction === 'from' ? 'fra' : 'til'} denne parten.
-                  </Paragraph>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {connectionsList.map((conn, i) => (
-                    <ConnectionCard key={conn.party?.id ?? i} connection={conn} />
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-        </div>
       </div>
+
+      {/* Tabs with results */}
+      {!selectedParty ? (
+        <div className="text-center py-20 bg-gray-50 border border-gray-200 rounded-2xl">
+          <div className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5">
+              <path d="M15 7h3a5 5 0 0 1 5 5 5 5 0 0 1-5 5h-3m-6 0H6a5 5 0 0 1-5-5 5 5 0 0 1 5-5h3" />
+              <line x1="8" y1="12" x2="16" y2="12" />
+            </svg>
+          </div>
+          <Paragraph className="text-gray-400">Velg en part for å hente tilkoblinger</Paragraph>
+        </div>
+      ) : (
+        <Tabs
+          value={direction}
+          onChange={(value) => setDirection(value as 'from' | 'to')}
+          data-size="md"
+        >
+          <Tabs.List>
+            <Tabs.Tab value="from">Fra part</Tabs.Tab>
+            <Tabs.Tab value="to">Til part</Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="from">
+            <ConnectionsResultPanel
+              direction="from"
+              isLoading={connectionsLoading}
+              error={connectionsError}
+              connections={connectionsList}
+              onRefresh={fetchConnections}
+            />
+          </Tabs.Panel>
+
+          <Tabs.Panel value="to">
+            <ConnectionsResultPanel
+              direction="to"
+              isLoading={connectionsLoading}
+              error={connectionsError}
+              connections={connectionsList}
+              onRefresh={fetchConnections}
+            />
+          </Tabs.Panel>
+        </Tabs>
+      )}
     </div>
   );
 }

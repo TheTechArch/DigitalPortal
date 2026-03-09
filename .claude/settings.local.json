@@ -3,7 +3,8 @@
     "allow": [
       "Bash(dotnet build --no-restore)",
       "Bash(wc -l /c/repos/DigitalPortal/swagger/*.json)",
-      "Bash(npx vite build)"
+      "Bash(npx vite build)",
+      "Bash(grep '\"\"tailwindcss\"\"' package.json)"
     ]
   }
 }

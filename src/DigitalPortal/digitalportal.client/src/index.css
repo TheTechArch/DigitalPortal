@@ -1,6 +1,6 @@
+@import "tailwindcss";
 @import "@digdir/designsystemet-theme";
 @import "@digdir/designsystemet-css";
-@import "tailwindcss";
 
 *, *::before, *::after {
   box-sizing: border-box;
