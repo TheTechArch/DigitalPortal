@@ -18,12 +18,12 @@ public class ClientDelegationsController(ClientDelegationsService clientDelegati
 
         try
         {
-            var (content, statusCode) = await clientDelegationsService.GetMyClientsAsync(altinnToken);
+            var (result, error, statusCode) = await clientDelegationsService.GetMyClientsAsync(altinnToken);
 
-            if (statusCode < 200 || statusCode >= 300)
-                return StatusCode(statusCode, content);
+            if (result is null)
+                return StatusCode(statusCode, error);
 
-            return Content(content, "application/json");
+            return Ok(result);
         }
         catch (Exception)
         {

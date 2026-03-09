@@ -8,7 +8,7 @@ namespace DigitalPortal.Server.Controllers;
 public class AccessManagementController(AccessManagementService accessManagementService) : ControllerBase
 {
     // GET /api/accessmanagement/authorizedparties
-    // Forwards all filter query parameters to Altinn and streams the JSON response.
+    // Forwards all filter query parameters to Altinn and returns typed response.
     [HttpGet("authorizedparties")]
     public async Task<IActionResult> GetAuthorizedParties()
     {
@@ -19,12 +19,12 @@ public class AccessManagementController(AccessManagementService accessManagement
         try
         {
             var queryString = Request.QueryString.Value ?? string.Empty;
-            var (content, statusCode) = await accessManagementService.GetAuthorizedPartiesAsync(altinnToken, queryString);
+            var (result, error, statusCode) = await accessManagementService.GetAuthorizedPartiesAsync(altinnToken, queryString);
 
-            if (statusCode < 200 || statusCode >= 300)
-                return StatusCode(statusCode, content);
+            if (result is null)
+                return StatusCode(statusCode, error);
 
-            return Content(content, "application/json");
+            return Ok(result);
         }
         catch (Exception)
         {

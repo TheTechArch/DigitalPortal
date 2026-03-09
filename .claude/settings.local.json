@@ -4,7 +4,9 @@
       "Bash(dotnet build --no-restore)",
       "Bash(wc -l /c/repos/DigitalPortal/swagger/*.json)",
       "Bash(npx vite build)",
-      "Bash(grep '\"\"tailwindcss\"\"' package.json)"
+      "Bash(grep '\"\"tailwindcss\"\"' package.json)",
+      "Bash(grep -E \"\\\\.cs$\")",
+      "Bash(dotnet build DigitalPortal.Server/DigitalPortal.Server.csproj --no-restore)"
     ]
   }
 }

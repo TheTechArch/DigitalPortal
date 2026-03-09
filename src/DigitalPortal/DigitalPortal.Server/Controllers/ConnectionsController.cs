@@ -1,3 +1,4 @@
+using Altinn.Authorization.Api.Contracts.AccessManagement;
 using DigitalPortal.Server.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,12 +19,12 @@ public class ConnectionsController(ConnectionsService connectionsService) : Cont
         try
         {
             var queryString = Request.QueryString.Value ?? string.Empty;
-            var (content, statusCode) = await connectionsService.GetConnectionsAsync(altinnToken, queryString);
+            var (result, error, statusCode) = await connectionsService.GetConnectionsAsync(altinnToken, queryString);
 
-            if (statusCode < 200 || statusCode >= 300)
-                return StatusCode(statusCode, content);
+            if (result is null)
+                return StatusCode(statusCode, error);
 
-            return Content(content, "application/json");
+            return Ok(result);
         }
         catch (Exception)
         {
@@ -31,9 +32,9 @@ public class ConnectionsController(ConnectionsService connectionsService) : Cont
         }
     }
 
-    // POST /api/connections?party=uuid&to=uuid  body: { personIdentifier, lastName }
+    // POST /api/connections?party=uuid  body: { personIdentifier, lastName }
     [HttpPost]
-    public async Task<IActionResult> CreateConnection()
+    public async Task<IActionResult> CreateConnection([FromBody] PersonInputDto input)
     {
         var altinnToken = Request.Cookies["dp_altinn_token"];
         if (string.IsNullOrEmpty(altinnToken))
@@ -42,15 +43,12 @@ public class ConnectionsController(ConnectionsService connectionsService) : Cont
         try
         {
             var queryString = Request.QueryString.Value ?? string.Empty;
-            using var reader = new StreamReader(Request.Body);
-            var jsonBody = await reader.ReadToEndAsync();
+            var (result, error, statusCode) = await connectionsService.CreateConnectionAsync(altinnToken, queryString, input);
 
-            var (content, statusCode) = await connectionsService.CreateConnectionAsync(altinnToken, queryString, jsonBody);
+            if (result is null)
+                return StatusCode(statusCode, error);
 
-            if (statusCode < 200 || statusCode >= 300)
-                return StatusCode(statusCode, content);
-
-            return Content(content, "application/json");
+            return Ok(result);
         }
         catch (Exception)
         {
