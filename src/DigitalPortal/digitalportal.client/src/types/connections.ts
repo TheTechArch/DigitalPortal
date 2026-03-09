@@ -47,3 +47,15 @@ export interface PaginatedResult<T> {
   data: T[];
   links?: { next?: string | null };
 }
+
+export interface PersonInput {
+  personIdentifier: string;
+  lastName: string;
+}
+
+export interface AssignmentDto {
+  id: string;
+  roleId: string;
+  fromId: string;
+  toId: string;
+}

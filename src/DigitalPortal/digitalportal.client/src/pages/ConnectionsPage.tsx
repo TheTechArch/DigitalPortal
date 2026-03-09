@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Heading, Paragraph, Spinner, Tabs } from '@digdir/designsystemet-react';
 import { useAuth } from '../hooks/useAuth';
 import type { AuthorizedPartyDto, PaginatedResult as PartyPaginatedResult } from '../types/authorizedParties';
-import type { ConnectionDto, PaginatedResult } from '../types/connections';
+import type { ConnectionDto, PaginatedResult, AssignmentDto } from '../types/connections';
 
 const REQUIRED_SCOPES = [
   'altinn:accessmanagement/enduser:connections:fromothers.read',
@@ -143,6 +143,149 @@ function ConnectionCard({ connection }: { connection: ConnectionDto }) {
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// ── Add connection form ──────────────────────────────────────────────────────
+
+function AddConnectionForm({
+  selectedParty,
+  onCreated,
+}: {
+  selectedParty: string;
+  onCreated: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [personIdentifier, setPersonIdentifier] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<AssignmentDto | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
+    setSubmitting(true);
+
+    const params = new URLSearchParams();
+    params.set('party', selectedParty);
+
+    try {
+      const res = await fetch(`/api/connections?${params.toString()}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ personIdentifier, lastName }),
+      });
+
+      const text = await res.text();
+      if (!res.ok) throw new Error(`${res.status}: ${text}`);
+
+      const result = JSON.parse(text) as AssignmentDto;
+      setSuccess(result);
+      setPersonIdentifier('');
+      setLastName('');
+      onCreated();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Ukjent feil');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="mt-6">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 text-sm font-medium cursor-pointer hover:opacity-80 transition-opacity"
+        style={{ color: '#1E4D8C' }}
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          className={`transition-transform ${open ? 'rotate-45' : ''}`}
+        >
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        Legg til tilkobling
+      </button>
+
+      {open && (
+        <form onSubmit={handleSubmit} className="mt-4 bg-white border border-gray-200 rounded-2xl p-5 space-y-4">
+          <Heading level={3} data-size="xs">
+            Ny tilkobling
+          </Heading>
+          <Paragraph className="text-gray-500 text-sm">
+            Oppgi fødselsnummer (eller brukernavn) og etternavn for personen du vil opprette tilkobling til.
+          </Paragraph>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
+                Fødselsnummer
+              </label>
+              <input
+                type="text"
+                value={personIdentifier}
+                onChange={(e) => setPersonIdentifier(e.target.value)}
+                placeholder="11-sifret fødselsnummer"
+                maxLength={11}
+                required
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
+                Etternavn
+              </label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                placeholder="Etternavn"
+                required
+                className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={submitting || !personIdentifier || !lastName}
+              className="px-5 py-2.5 rounded-xl text-white text-sm font-medium cursor-pointer transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ backgroundColor: '#1E4D8C' }}
+            >
+              {submitting ? 'Oppretter...' : 'Opprett tilkobling'}
+            </button>
+            <button
+              type="button"
+              onClick={() => { setOpen(false); setError(null); setSuccess(null); }}
+              className="px-4 py-2.5 rounded-xl text-sm text-gray-600 border border-gray-200 cursor-pointer hover:bg-gray-50"
+            >
+              Avbryt
+            </button>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+              <span className="font-medium">Feil:</span> {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-700">
+              Tilkobling opprettet! ID: <code className="font-mono">{success.id}</code>
+            </div>
+          )}
+        </form>
+      )}
     </div>
   );
 }
@@ -408,6 +551,11 @@ export default function ConnectionsPage() {
           </div>
         </div>
       </div>
+
+      {/* Add connection */}
+      {selectedParty && (
+        <AddConnectionForm selectedParty={selectedParty} onCreated={fetchConnections} />
+      )}
 
       {/* Tabs with results */}
       {!selectedParty ? (
