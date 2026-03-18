@@ -32,27 +32,53 @@ public class ConnectionDto
 }
 
 /// <summary>
-/// Connection from one party to another
+/// A single access package with its permissions (from the connections/accesspackages endpoint)
 /// </summary>
 public class ConnectionPackageDto
 {
     /// <summary>
-    /// Party
+    /// The access package
     /// </summary>
-    public CompactEntityDto Party { get; set; } = new();
+    public CompactPackageDto Package { get; set; } = new();
 
     /// <summary>
-    /// Roles the party has for given filter
+    /// Permissions for this package
     /// </summary>
-    public List<CompactRoleDto> Roles { get; set; } = new();
+    public List<ConnectionPackagePermissionDto> Permissions { get; set; } = new();
+}
+
+/// <summary>
+/// A permission entry showing from/to/via/role for a connection package
+/// </summary>
+public class ConnectionPackagePermissionDto
+{
+    /// <summary>
+    /// The party granting access
+    /// </summary>
+    public CompactEntityDto From { get; set; } = new();
 
     /// <summary>
-    /// Connections the party has
+    /// The party receiving access
     /// </summary>
-    public List<ConnectionDto> Connections { get; set; } = new();
+    public CompactEntityDto To { get; set; } = new();
 
     /// <summary>
-    /// Packages the party has
+    /// Optional intermediary party
     /// </summary>
-    public List<CompactPackageDto> Packages { get; set; } = new();
+    public CompactEntityDto? Via { get; set; }
+
+    /// <summary>
+    /// The role that grants the permission
+    /// </summary>
+    public CompactRoleDto? Role { get; set; }
+
+    /// <summary>
+    /// Optional role via which the permission is granted
+    /// </summary>
+    public CompactRoleDto? ViaRole { get; set; }
+
+    /// <summary>
+    /// Optional reason
+    /// </summary>
+    public string? Reason { get; set; }
 }

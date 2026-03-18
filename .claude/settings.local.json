@@ -6,7 +6,10 @@
       "Bash(npx vite build)",
       "Bash(grep '\"\"tailwindcss\"\"' package.json)",
       "Bash(grep -E \"\\\\.cs$\")",
-      "Bash(dotnet build DigitalPortal.Server/DigitalPortal.Server.csproj --no-restore)"
+      "Bash(dotnet build DigitalPortal.Server/DigitalPortal.Server.csproj --no-restore)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -r \"params.set.*from\\\\|params.set.*to\" . --include=*.tsx --include=*.ts)",
+      "Bash(find . -path */hooks/* -name *.ts -o -path */hooks/* -name *.tsx)"
     ]
   }
 }

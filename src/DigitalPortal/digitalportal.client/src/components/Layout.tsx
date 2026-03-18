@@ -6,6 +6,7 @@ const navLinks = [
   { to: '/mine-klienter', label: 'Mine klienter' },
   { to: '/autoriserte-parter', label: 'Autoriserte parter' },
   { to: '/tilkoblinger', label: 'Tilkoblinger' },
+  { to: '/tilkoblingspakker', label: 'Tilkoblingspakker' },
   { to: '/sluttbruker-api', label: 'Sluttbruker-API' },
   { to: '/tjenesteeier-api', label: 'Tjenesteeier-API' },
   { to: '/pdp', label: 'PDP' },
